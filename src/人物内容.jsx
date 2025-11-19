@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Briefcase,
   Target,
@@ -24,10 +24,25 @@ const Editable = ({ defaultText, className = '' }) => (
   </span>
 );
 
+// 这里是“口令”的 base64 哈希，明文是 'BG2025@master'
+const PASSWORD_HASH = 'YWExMTIyMzMwMC4u'; // 你可以用 btoa('你的新密码') 替换
+
+const verifyPassword = (input) => {
+  try {
+    return btoa(input) === PASSWORD_HASH;
+  } catch {
+    return false;
+  }
+};
+
 // 调整人物背景图上下位置（0% = 顶部，50% = 中间，100% = 底部）
 const IMAGE_OFFSET_Y = '40%';
 
 export default function SpeakerProfile() {
+  const [authorized, setAuthorized] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [error, setError] = useState('');
+
   const handleScreenshot = async () => {
     const el = document.getElementById('main-container');
     if (!el) return;
@@ -48,6 +63,68 @@ export default function SpeakerProfile() {
     }
   };
 
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (verifyPassword(passwordInput.trim())) {
+      setAuthorized(true);
+      setError('');
+      setPasswordInput('');
+    } else {
+      setError('Access denied. Incorrect passcode.');
+    }
+  };
+
+  // 未授权时，先渲染口令输入界面
+  if (!authorized) {
+    return (
+      <div className="min-h-screen w-full bg-slate-950 flex items-center justify-center px-4">
+        <div className="w-full max-w-sm border border-white/10 bg-slate-900/90 rounded-xl px-6 py-6 shadow-lg shadow-black/60">
+          <div className="flex items-center gap-2 mb-4">
+            <Sparkles className="h-5 w-5 text-pink-300" />
+            <h1 className="text-sm font-semibold text-slate-50 tracking-[0.18em] uppercase">
+              BG Private Access
+            </h1>
+          </div>
+          <p className="text-xs text-slate-300 mb-4 leading-relaxed">
+            This page is protected. Please enter your{' '}
+            <span className="text-pink-200 font-medium">private passcode</span>{' '}
+            to view the content.
+          </p>
+          <form onSubmit={handleLogin} className="space-y-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[11px] text-slate-400 uppercase tracking-[0.16em]">
+                Passcode
+              </label>
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                className="w-full rounded-lg bg-slate-950/80 border border-slate-600/80 text-sm text-slate-100 px-3 py-2 outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400/70"
+                placeholder="Enter access code"
+              />
+            </div>
+            {error && (
+              <div className="text-[11px] text-rose-300">
+                {error}
+              </div>
+            )}
+            <button
+              type="submit"
+              className="w-full mt-1 inline-flex items-center justify-center gap-2 rounded-lg bg-pink-600 hover:bg-pink-500 text-xs font-semibold text-slate-50 py-2.5 transition shadow-md shadow-pink-700/40"
+            >
+              <Lock className="h-3.5 w-3.5" />
+              <span>Unlock</span>
+            </button>
+          </form>
+          <p className="mt-4 text-[10px] text-slate-500 text-center">
+            For authorized BG partners only.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // 通过验证后，显示原来的内容 + 截图按钮
   return (
     <div className="min-h-screen w-full bg-slate-950 flex flex-col items-center justify-center px-4 py-8">
       {/* 截图按钮（主容器外，不重叠） */}
