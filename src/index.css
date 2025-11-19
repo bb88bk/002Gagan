@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 下面是一些基础全局样式，可保留页面背景 & 字体效果 */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  background-color: #020617; /* 对应 bg-slate-950 */
+  color: #e5e7eb; /* 对应 text-slate-200 左右 */
+}
+
+/* 可选：让按钮默认去掉浏览器自带边框样式（你已经在用 Tailwind，所以按钮主要靠 class 控制） */
+button {
+  font-family: inherit;
+}
